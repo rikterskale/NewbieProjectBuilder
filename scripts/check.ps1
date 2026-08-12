@@ -5,7 +5,17 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 Push-Location $Root
 try {
-    $Python = if (Get-Command py -ErrorAction SilentlyContinue) { @("py", "-3") } else { @("python") }
+    # Prefer `python` from the active PATH so virtual environments and
+    # actions/setup-python use the interpreter where development tools were
+    # installed. Fall back to the Windows Python launcher only when needed.
+    $Python = if (Get-Command python -ErrorAction SilentlyContinue) {
+        @("python")
+    } elseif (Get-Command py -ErrorAction SilentlyContinue) {
+        @("py", "-3")
+    } else {
+        throw "Python 3 was not found. Run the setup guide before running checks."
+    }
+
     function Invoke-Python {
         param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
         if ($Python.Count -eq 2) {
