@@ -34,7 +34,7 @@ Newbie Project Builder can:
 - Install a small Agency Agents core roster when Bash and Codex integration are available.
 - Show guidance for verifying the Superpowers plugin in Codex.
 - Create verbose redacted logs and sanitized support archives.
-- Resume interrupted setup workflows from a small state file.
+- Record interrupted setup workflows in a small state file for diagnosis and future resume support.
 - Remove builder-owned logs, backups, state, support archives, and integration checkouts
   without touching generated projects.
 
@@ -243,7 +243,7 @@ python -m pip_audit
 ```
 
 The test configuration enforces branch-aware coverage of at least 95 percent. The initial
-implementation currently has 64 passing tests and 96.27 percent measured branch-aware
+implementation currently has 64 passing tests and 96.20 percent measured branch-aware
 coverage in the local validation environment.
 
 ## Project status
