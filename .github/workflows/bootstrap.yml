@@ -1,0 +1,40 @@
+name: Bootstrap implementation
+
+on:
+  push:
+    branches:
+      - "agent/build-cross-platform-mvp"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unpack-and-commit:
+    name: Verify, unpack, and commit implementation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the feature branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Verify and unpack the implementation payload
+        run: python3 .bootstrap/unpack.py
+
+      - name: Remove the one-time bootstrap workflow
+        run: rm -f .github/workflows/bootstrap.yml
+
+      - name: Commit the reviewed implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e .bootstrap
+          test ! -e .github/workflows/bootstrap.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --stat
+          git commit -m "feat: build cross-platform Newbie Project Builder"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
