@@ -1,6 +1,9 @@
 """One-time, checksum-validated repository bootstrap.
 
 This file and the payload chunks are deleted before the implementation commit.
+The two repairs below correct characters that were proven missing during the
+GitHub contents-API transfer. Full-payload and ZIP checksums remain the final
+authority; extraction stops if any other byte differs.
 """
 
 from __future__ import annotations
@@ -15,6 +18,7 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 EXPECTED_PARTS = 9
+EXPECTED_PART_LENGTHS = (14000, 14000, 14000, 14000, 14000, 14000, 14000, 14000, 9924)
 EXPECTED_BASE64_SHA256 = "7618afc19a8429d8e4e53f4efaae81ca43a4b1c40009f8ab008345ac72898eba"
 EXPECTED_ZIP_SHA256 = "9528a0fad02224c67cdd887caa5a8cd7914b3a1b514f830a2e848c7abe4eb2d2"
 
@@ -31,6 +35,23 @@ def safe_target(root: Path, archive_name: str) -> Path:
     if not target.is_relative_to(root.resolve()):
         raise RuntimeError(f"Archive path escapes repository: {archive_name!r}")
     return target
+
+
+def repaired_part(index: int, text: str) -> str:
+    """Restore only the two omissions identified by exact blob comparison."""
+
+    if index == 6 and len(text) == 13999:
+        text = text[:1594] + "W" + text[1594:]
+    elif index == 8 and len(text) == 9920:
+        text = text[:5349] + "AAAA" + text[5349:]
+
+    expected_length = EXPECTED_PART_LENGTHS[index]
+    if len(text) != expected_length:
+        raise RuntimeError(
+            f"Unexpected length for payload part {index:02d}: "
+            f"expected {expected_length}, received {len(text)}"
+        )
+    return text
 
 
 def extract_archive(root: Path, archive_bytes: bytes) -> int:
@@ -58,12 +79,16 @@ def extract_archive(root: Path, archive_bytes: bytes) -> int:
 def main() -> None:
     root = Path(__file__).resolve().parents[1]
     bootstrap = root / ".bootstrap"
-    parts = [bootstrap / f"payload.part{index:02d}" for index in range(EXPECTED_PARTS)]
-    missing = [str(path) for path in parts if not path.is_file()]
+    paths = [bootstrap / f"payload.part{index:02d}" for index in range(EXPECTED_PARTS)]
+    missing = [str(path) for path in paths if not path.is_file()]
     if missing:
         raise RuntimeError(f"Missing payload parts: {missing}")
 
-    encoded = "".join(path.read_text(encoding="ascii") for path in parts).encode("ascii")
+    part_text = [
+        repaired_part(index, path.read_text(encoding="ascii"))
+        for index, path in enumerate(paths)
+    ]
+    encoded = "".join(part_text).encode("ascii")
     encoded_hash = sha256(encoded)
     if encoded_hash != EXPECTED_BASE64_SHA256:
         raise RuntimeError(
