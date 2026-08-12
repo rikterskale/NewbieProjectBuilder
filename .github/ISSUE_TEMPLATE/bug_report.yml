@@ -1,0 +1,62 @@
+name: Bug report
+description: Report a problem without sharing secrets or private data
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not paste passwords, tokens, private keys, cookies, `.env` files, private company data, or unsanitized logs.**
+        Use a sanitized support bundle and review it before sharing.
+  - type: input
+    id: version
+    attributes:
+      label: Builder version
+      placeholder: "Example: 0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating system
+      options:
+        - Windows 10
+        - Windows 11
+        - Ubuntu
+        - Debian
+        - Kali Linux
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: error-code
+    attributes:
+      label: Error code
+      description: Example NPB-501. Leave blank if none appeared.
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened?
+      description: Use ordinary language and remove private information.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Safe steps to reproduce
+      description: Do not include credentials, active tokens, or private targets.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Privacy check
+      options:
+        - label: I reviewed this report and removed secrets and private data.
+          required: true
