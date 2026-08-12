@@ -88,6 +88,13 @@ jobs:
           python -m bandit -r src -ll
           bash -n start-linux.sh scripts/*.sh
 
+      - name: Prepare a connector-safe source commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/ci.yml .github/workflows/security.yml
+          git restore --source=HEAD -- .github/workflows/bootstrap-mvp.yml
+
       - name: Commit the validated implementation to the feature branch
         shell: bash
         run: |
