@@ -50,7 +50,8 @@ jobs:
           anchor = "class DiskUsageLike(Protocol):\n    free: int\n\n\nclass Preflight:\n"
           replacement = (
               "class DiskUsageLike(Protocol):\n"
-              "    free: int\n\n\n"
+              "    @property\n"
+              "    def free(self) -> int: ...\n\n\n"
               "def _disk_usage(path: Path) -> DiskUsageLike:\n"
               "    return shutil.disk_usage(path)\n\n\n"
               "class Preflight:\n"
